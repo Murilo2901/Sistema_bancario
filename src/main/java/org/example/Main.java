@@ -33,7 +33,9 @@ public class Main {
                         System.out.print("Número da conta: ");
                         String numero = sc.nextLine();
                         System.out.print("Nome do titular: ");
-                        String titular = sc.nextLine();
+                        String titularNome = sc.nextLine();
+                        System.out.print("CPF do titular (opcional): ");
+                        String titularCpf = sc.nextLine();
                         System.out.print("Saldo inicial: ");
                         double saldo = sc.nextDouble();
                         sc.nextLine();
@@ -43,10 +45,11 @@ public class Main {
                         sc.nextLine();
 
                         Conta conta;
+                        Cliente cliente = new Cliente(titularNome, titularCpf);
                         if (tipo == 1) {
-                            conta = new ContaCorrente(numero, titular, saldo);
+                            conta = new ContaCorrente(numero, cliente, saldo);
                         } else {
-                            conta = new ContaPoupanca(numero, titular, saldo);
+                            conta = new ContaPoupanca(numero, cliente, saldo);
                         }
 
                         dao.inserirConta(conta);
@@ -75,10 +78,10 @@ public class Main {
                         double valor = sc.nextDouble();
                         sc.nextLine();
 
-                        Conta conta = dao.buscarContaPorNumero(numero);
+                        Conta conta = dao.buscarPorNumero(numero);
                         if (conta != null) {
                             conta.depositar(valor);
-                            dao.atualizarSaldo(conta);
+                            dao.atualizarSaldo(conta.getId(), conta.getSaldo());
                             System.out.println("Depósito realizado!");
                         } else {
                             System.out.println("Conta não encontrada!");
@@ -91,10 +94,10 @@ public class Main {
                         double valor = sc.nextDouble();
                         sc.nextLine();
 
-                        Conta conta = dao.buscarContaPorNumero(numero);
+                        Conta conta = dao.buscarPorNumero(numero);
                         if (conta != null) {
                             if (conta.sacar(valor)) {
-                                dao.atualizarSaldo(conta);
+                                dao.atualizarSaldo(conta.getId(), conta.getSaldo());
                                 System.out.println("Saque realizado!");
                             } else {
                                 System.out.println("Saldo insuficiente!");
@@ -112,13 +115,13 @@ public class Main {
                         double valor = sc.nextDouble();
                         sc.nextLine();
 
-                        Conta contaOrigem = dao.buscarContaPorNumero(origem);
-                        Conta contaDestino = dao.buscarContaPorNumero(destino);
+                        Conta contaOrigem = dao.buscarPorNumero(origem);
+                        Conta contaDestino = dao.buscarPorNumero(destino);
 
                         if (contaOrigem != null && contaDestino != null) {
                             if (contaOrigem.transferir(contaDestino, valor)) {
-                                dao.atualizarSaldo(contaOrigem);
-                                dao.atualizarSaldo(contaDestino);
+                                dao.atualizarSaldo(contaOrigem.getId(), contaOrigem.getSaldo());
+                                dao.atualizarSaldo(contaDestino.getId(), contaDestino.getSaldo());
                                 System.out.println("Transferência realizada!");
                             } else {
                                 System.out.println("Saldo insuficiente!");
@@ -130,12 +133,15 @@ public class Main {
                     case 6 -> {
                         System.out.print("Número da conta a atualizar: ");
                         String numero = sc.nextLine();
-                        Conta conta = dao.buscarContaPorNumero(numero);
+                        Conta conta = dao.buscarPorNumero(numero);
 
                         if (conta != null) {
                             System.out.print("Novo titular: ");
-                            String novoTitular = sc.nextLine();
-                            conta.setTitular(novoTitular);
+                            String novoTitularNome = sc.nextLine();
+                            System.out.print("Novo CPF (opcional): ");
+                            String novoTitularCpf = sc.nextLine();
+                            Cliente novoCliente = new Cliente(novoTitularNome, novoTitularCpf);
+                            conta.setTitular(novoCliente);
                             dao.atualizarConta(conta);
                             System.out.println("Conta atualizada!");
                         } else {
@@ -145,8 +151,13 @@ public class Main {
                     case 7 -> {
                         System.out.print("Número da conta a remover: ");
                         String numero = sc.nextLine();
-                        dao.removerConta(numero);
-                        System.out.println("Conta removida!");
+                        Conta conta = dao.buscarPorNumero(numero);
+                        if (conta != null) {
+                            dao.removerConta(conta.getId());
+                            System.out.println("Conta removida!");
+                        } else {
+                            System.out.println("Conta não encontrada!");
+                        }
                     }
                     case 0 -> System.out.println("Saindo...");
                     default -> System.out.println("Opção inválida!");

@@ -55,15 +55,18 @@ public abstract class Conta {
         if (valor > 0) this.saldo += valor;
     }
 
-    public void sacar(double valor) throws Exception {
-        if (valor <= 0) throw new Exception("Valor inválido para saque.");
-        if (valor > saldo) throw new Exception("Saldo insuficiente.");
+    public boolean sacar(double valor) {
+        if (valor <= 0) return false;
+        if (valor > saldo) return false;
         this.saldo -= valor;
+        return true;
     }
 
-    public void transferir(Conta destino, double valor) throws Exception {
-        this.sacar(valor);
+    public boolean transferir(Conta destino, double valor) {
+        boolean sacou = this.sacar(valor);
+        if (!sacou) return false;
         destino.depositar(valor);
+        return true;
     }
 
     public abstract String mostrarDetalhes();
