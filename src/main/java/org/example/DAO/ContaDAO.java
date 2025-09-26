@@ -13,7 +13,7 @@ import java.util.List;
 public class ContaDAO {
 
     public void inserirConta(Conta conta) throws SQLException {
-        String insertConta = """
+        String sql = """
                 INSERT INTO conta (numero, cliente_id, tipo, saldo)
                 VALUES (?, ?, ?, ?)
                 """;
@@ -23,7 +23,7 @@ public class ContaDAO {
             try {
                 int clienteId = obterOuCriarCliente(conn, conta.getTitular());
 
-                try (PreparedStatement stmt = conn.prepareStatement(insertConta)) {
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, conta.getNumero());
                     stmt.setInt(2, clienteId);
                     String tipo = (conta instanceof ContaCorrente) ? "CORRENTE" : "POUPANCA";
@@ -43,7 +43,7 @@ public class ContaDAO {
     }
 
     public List<Conta> listarContas() throws SQLException {
-        String query = """
+        String sql = """
                 SELECT c.id as conta_id, c.numero, c.tipo, c.saldo,
                        cl.id as cliente_id, cl.nome as cliente_nome, cl.cpf as cliente_cpf
                 FROM conta c
@@ -53,7 +53,7 @@ public class ContaDAO {
 
         List<Conta> contas = new ArrayList<>();
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
 
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -81,7 +81,7 @@ public class ContaDAO {
     }
 
     public Conta buscarPorNumero(String numero) throws SQLException {
-        String query = """
+        String sql = """
                 SELECT c.id as conta_id, c.numero, c.tipo, c.saldo,
                        cl.id as cliente_id, cl.nome as cliente_nome, cl.cpf as cliente_cpf
                 FROM conta c
@@ -90,7 +90,7 @@ public class ContaDAO {
                 """;
 
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, numero);
             ResultSet rs = stmt.executeQuery();
             if (rs.next()) {
@@ -115,7 +115,7 @@ public class ContaDAO {
     }
 
     public List<Conta> buscarPorTitular(String nomeTitular) throws SQLException {
-        String query = """
+        String sql = """
                 SELECT c.id as conta_id, c.numero, c.tipo, c.saldo,
                        cl.id as cliente_id, cl.nome as cliente_nome, cl.cpf as cliente_cpf
                 FROM conta c
@@ -124,7 +124,7 @@ public class ContaDAO {
                 """;
         List<Conta> contas = new ArrayList<>();
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setString(1, "%" + nomeTitular + "%");
             ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
@@ -150,7 +150,7 @@ public class ContaDAO {
     }
 
     public void atualizarConta(Conta conta) throws SQLException {
-        String updateConta = """
+        String sql = """
                 UPDATE conta
                 SET numero = ?, cliente_id = ?, tipo = ?, saldo = ?
                 WHERE id = ?
@@ -161,7 +161,7 @@ public class ContaDAO {
             try {
                 int clienteId = obterOuCriarCliente(conn, conta.getTitular());
 
-                try (PreparedStatement stmt = conn.prepareStatement(updateConta)) {
+                try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, conta.getNumero());
                     stmt.setInt(2, clienteId);
                     String tipo = (conta instanceof ContaCorrente) ? "CORRENTE" : "POUPANCA";
@@ -182,9 +182,9 @@ public class ContaDAO {
     }
 
     public void atualizarSaldo(int idConta, double novoSaldo) throws SQLException {
-        String query = "UPDATE conta SET saldo = ? WHERE id = ?";
+        String sql = "UPDATE conta SET saldo = ? WHERE id = ?";
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setDouble(1, novoSaldo);
             stmt.setInt(2, idConta);
             stmt.executeUpdate();
@@ -192,9 +192,9 @@ public class ContaDAO {
     }
 
     public void removerConta(int id) throws SQLException {
-        String query = "DELETE FROM conta WHERE id = ?";
+        String sql = "DELETE FROM conta WHERE id = ?";
         try (Connection conn = Conexao.conectar();
-             PreparedStatement stmt = conn.prepareStatement(query)) {
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
