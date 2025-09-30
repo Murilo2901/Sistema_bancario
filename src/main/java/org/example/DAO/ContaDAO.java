@@ -21,11 +21,9 @@ public class ContaDAO {
         try (Connection conn = Conexao.conectar()) {
             conn.setAutoCommit(false);
             try {
-                int clienteId = obterOuCriarCliente(conn, conta.getTitular());
 
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, conta.getNumero());
-                    stmt.setInt(2, clienteId);
                     String tipo = (conta instanceof ContaCorrente) ? "CORRENTE" : "POUPANCA";
                     stmt.setString(3, tipo);
                     stmt.setDouble(4, conta.getSaldo());
@@ -159,11 +157,8 @@ public class ContaDAO {
         try (Connection conn = Conexao.conectar()) {
             conn.setAutoCommit(false);
             try {
-                int clienteId = obterOuCriarCliente(conn, conta.getTitular());
-
                 try (PreparedStatement stmt = conn.prepareStatement(sql)) {
                     stmt.setString(1, conta.getNumero());
-                    stmt.setInt(2, clienteId);
                     String tipo = (conta instanceof ContaCorrente) ? "CORRENTE" : "POUPANCA";
                     stmt.setString(3, tipo);
                     stmt.setDouble(4, conta.getSaldo());
@@ -198,34 +193,5 @@ public class ContaDAO {
             stmt.setInt(1, id);
             stmt.executeUpdate();
         }
-    }
-
-    private int obterOuCriarCliente(Connection conn, Cliente cliente) throws SQLException {
-        if (cliente.getCpf() != null && !cliente.getCpf().isBlank()) {
-            String findCpf = "SELECT id FROM cliente WHERE cpf = ?";
-            try (PreparedStatement ps = conn.prepareStatement(findCpf)) {
-                ps.setString(1, cliente.getCpf());
-                ResultSet rs = ps.executeQuery();
-                if (rs.next()) return rs.getInt("id");
-            }
-        }
-
-        String findNome = "SELECT id FROM cliente WHERE nome = ?";
-        try (PreparedStatement ps = conn.prepareStatement(findNome)) {
-            ps.setString(1, cliente.getNome());
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt("id");
-        }
-
-        String insert = "INSERT INTO cliente (nome, cpf) VALUES (?, ?)";
-        try (PreparedStatement ps = conn.prepareStatement(insert, Statement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, cliente.getNome());
-            ps.setString(2, cliente.getCpf());
-            ps.executeUpdate();
-            ResultSet keys = ps.getGeneratedKeys();
-            if (keys.next()) return keys.getInt(1);
-        }
-
-        throw new SQLException("Não foi possível inserir/obter cliente.");
     }
 }

@@ -22,6 +22,9 @@ public class Main {
             System.out.println("5 - Transferir");
             System.out.println("6 - Atualizar conta");
             System.out.println("7 - Remover conta");
+            System.out.println("8 - Buscar conta por número");
+            System.out.println("9 - Buscar contas por titular");
+            System.out.println("10 - Aplicar rendimento poupança");
             System.out.println("0 - Sair");
             System.out.print("Escolha: ");
             opcao = sc.nextInt();
@@ -157,6 +160,40 @@ public class Main {
                             System.out.println("Conta removida!");
                         } else {
                             System.out.println("Conta não encontrada!");
+                        }
+                    }
+                    case 8 -> {
+                        System.out.print("Número da conta: ");
+                        String numero = sc.nextLine();
+                        Conta conta = dao.buscarPorNumero(numero);
+                        if (conta != null) {
+                            System.out.println("Conta encontrada: " + conta);
+                        } else {
+                            System.out.println("Conta não encontrada.");
+                        }
+                    }
+
+                    case 9 -> {
+                        System.out.print("Nome do titular: ");
+                        String nome = sc.nextLine();
+                        List<Conta> contas = dao.buscarPorTitular(nome);
+                        if (contas.isEmpty()) {
+                            System.out.println("Nenhuma conta encontrada para esse titular.");
+                        } else {
+                            contas.forEach(System.out::println);
+                        }
+                    }
+
+                    case 10 -> {
+                        System.out.print("Número da conta poupança: ");
+                        String numero = sc.nextLine();
+                        Conta conta = dao.buscarPorNumero(numero);
+                        if (conta instanceof ContaPoupanca poupanca) {
+                            poupanca.aplicarRendimento();
+                            dao.atualizarSaldo(poupanca.getId(), poupanca.getSaldo());
+                            System.out.println("Rendimento aplicado! Novo saldo: " + poupanca.getSaldo());
+                        } else {
+                            System.out.println("Essa conta não é poupança.");
                         }
                     }
                     case 0 -> System.out.println("Saindo...");
